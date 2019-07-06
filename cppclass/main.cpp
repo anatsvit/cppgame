@@ -1,7 +1,12 @@
 #include <iostream>
 #include <stdio.h>
+#include <vector>
+#include <SFML/Graphics.hpp>
+
+#define ENTITY_TYPE_PLATFORM 1
 
 using namespace std;
+using namespace sf;
 
 class Entity 
 {
@@ -29,13 +34,14 @@ class Entity
         {
             return y;
         }
+		
+		virtual void init() {}
+		virtual void update() {}
 };
 
 class PhysicEntity: public Entity 
 {
       protected:
-        float x;
-        float y;
         int width;
         int height;
 
@@ -69,28 +75,128 @@ class PhysicEntity: public Entity
         }
 };
 
-class GameMap
+class Player: public PhysicEntity
 {
     public:
-        static GameMap* loadFromFile(string filename)
-        {
-            //std::vector использовать для хранения наследников Entity
+		void init()
+		{
+			//1.Загрузить и установить спрайт
+		}
+		
+		void update()
+		{
+			//1.Проверить нажатие клавиш
+			this->checkKeyboard();
+			//2.Проверить столкновение с другими физическими объектами на карте (проверять только тайлы вокруг персонажа)
+			//3.Обновить координаты
+			//4.Обновить скорость
+			//5.Обновить состояние
+			//6.Перерисовать
+		}
 
-            //1.Открыть файл карты
-            //2.Загрузить байты
-            //3.Трансформировать байты в соответствующие объекты
-            //4.Создать объект карты
-            GameMap *gameMap = new GameMap;
-            //5.Добавить к ней объекты
+	private:
+		void checkKeyboard()
+		{
+			//1.Проверка нажатия клавиши
+			//2.Реакция на клавишу (смена состояния)
+		}
+};
+
+class Platform: public PhysicEntity
+{
+    public:
+		void init()
+		{
+			//1.Загрузить и установить спрайт
+			cout << "INIT X: " << this->getX() << endl;
+			cout << "INIT Y: " << this->getY() << endl;
+		}
+		
+		void update()
+		{
+			//6.Перерисовать
+			cout << "UPD X: " << this->getX() << endl;
+			cout << "UPD Y: " << this->getY() << endl;
+		}
+};
+
+struct EntityPlace
+{ 
+	unsigned short x_coor; 
+	unsigned short y_coor; 
+	unsigned short type;
+};
+
+class EntityTransformer
+{
+	public:
+		static Entity* transform(EntityPlace *eplace)
+		{
+			if (eplace->type == ENTITY_TYPE_PLATFORM) {
+				Platform *platform = new Platform();
+				platform->setX(eplace->x_coor);
+				platform->setY(eplace->y_coor);
+				
+				return platform;
+			}
+			
+			return new Entity();
+		}
+};
+
+class GameMap
+{
+	private:
+		vector<Entity*> entities;
+		
+    public:
+        static GameMap* loadFromFile(const char *filename)
+        {
+			GameMap *gameMap = new GameMap;
+            //1.Открыть файл (filename) карты
+			FILE *mapfile = fopen(filename, "rb");
+			
+			EntityPlace *entityPlace = new EntityPlace;
+			//2.Загрузить байты
+			while (!feof(mapfile)) {
+				fread(entityPlace, 6, 1, mapfile);
+				
+				if (feof(mapfile)) {
+					break;
+				}
+				
+				gameMap->addEntity(EntityTransformer::transform(entityPlace));
+			}
+			
+			delete entityPlace;
+			
+			fclose(mapfile);
             
-            //6.Вернуть объект карты  
             return gameMap;        
+        }
+		
+		void init()
+        {
+			unsigned int vector_size = this->entities.size();
+			
+			for (int i = 0; i < vector_size; i++) {
+				this->entities[i]->init();
+			}
         }
         
         void update()
         {
-            //1.Обход итератором по vector Entity, вызов у каждого update()
+            unsigned int vector_size = this->entities.size();
+			
+			for (int i = 0; i < vector_size; i++) {
+				this->entities[i]->update();
+			}
         }
+		
+		void addEntity(Entity* entity)
+		{
+			this->entities.push_back(entity);
+		}
 };
 
 class Game
@@ -103,10 +209,24 @@ class Game
         void run()
         {
             this->map = GameMap::loadFromFile("map01.bin");
-     
-            //while (window->isOpen()) {
-                this->update();
-            //}      
+			this->map->init();
+			RenderWindow window(VideoMode(320,240), "Window");
+			window.setFramerateLimit(60);
+
+			while(window.isOpen()) {
+				Event event;
+				while(window.pollEvent(event))
+				{
+					if(event.type == Event::Closed)
+						window.close();
+				}
+
+				window.clear();
+				this->update();
+				window.display();
+			}  
+			
+			delete this->map;
         }
 
         void update()

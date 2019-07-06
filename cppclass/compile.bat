@@ -1,0 +1,2 @@
+mingw32-g++.exe -g -IC:\MinGW\bin -c D:\DCDownloads\cpp\cppgame\cppclass\main.cpp -o D:\DCDownloads\cpp\cppgame\cppclass\main.o
+mingw32-g++.exe -LC:\MinGW\bin -o D:\DCDownloads\cpp\cppgame\cppclass\main.exe D:\DCDownloads\cpp\cppgame\cppclass\main.o  C:\MinGW\lib\libsfml-graphics.a C:\MinGW\lib\libsfml-window.a C:\MinGW\lib\libsfml-system.a C:\MinGW\lib\libole32.a
