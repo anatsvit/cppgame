@@ -8,6 +8,8 @@
 using namespace std;
 using namespace sf;
 
+RenderWindow *gameWindow;
+
 class Entity 
 {
     protected:
@@ -36,6 +38,7 @@ class Entity
         }
 		
 		virtual void init() {}
+    
 		virtual void update() {}
 };
 
@@ -104,19 +107,21 @@ class Player: public PhysicEntity
 
 class Platform: public PhysicEntity
 {
+    private:
+        RectangleShape shape;
     public:
 		void init()
 		{
-			//1.Загрузить и установить спрайт
-			cout << "INIT X: " << this->getX() << endl;
-			cout << "INIT Y: " << this->getY() << endl;
+            RectangleShape currentShape;
+            currentShape.setSize(Vector2f(8, 8));
+            currentShape.setPosition(Vector2f(this->getX(), this->getY()));
+            currentShape.setFillColor(Color::Red);
+			this->shape = currentShape;
 		}
 		
 		void update()
 		{
-			//6.Перерисовать
-			cout << "UPD X: " << this->getX() << endl;
-			cout << "UPD Y: " << this->getY() << endl;
+			gameWindow->draw(this->shape);
 		}
 };
 
@@ -148,7 +153,6 @@ class GameMap
 {
 	private:
 		vector<Entity*> entities;
-		
     public:
         static GameMap* loadFromFile(const char *filename)
         {
@@ -191,6 +195,40 @@ class GameMap
 			for (int i = 0; i < vector_size; i++) {
 				this->entities[i]->update();
 			}
+
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+                EntityPlace *entityPlace = new EntityPlace;
+                entityPlace->x_coor = ((int)(sf::Mouse::getPosition(*gameWindow).x / 8)) * 8;
+                entityPlace->y_coor = ((int)(sf::Mouse::getPosition(*gameWindow).y / 8)) * 8;
+                entityPlace->type = ENTITY_TYPE_PLATFORM;
+                bool exists = false;
+
+                for (int i = 0; i < vector_size; i++) {
+				    if (this->entities[i]->getX() == entityPlace->x_coor && this->entities[i]->getY() == entityPlace->y_coor) {
+                        exists = true;
+                        break;                
+                    }
+			    }                
+
+                if (!exists && entityPlace->x_coor % 8 == 0 && entityPlace->y_coor % 8 == 0) {
+                    Entity *entity = EntityTransformer::transform(entityPlace);
+                    entity->init();
+                    this->addEntity(entity);
+                }
+                
+                delete entityPlace;
+            }
+
+             if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+                int tileX = ((int)(sf::Mouse::getPosition(*gameWindow).x / 8)) * 8;
+                int tileY = ((int)(sf::Mouse::getPosition(*gameWindow).y / 8)) * 8;
+                for (int i = 0; i < vector_size; i++) {
+                      if (this->entities[i]->getX() == tileX && this->entities[i]->getY() == tileY) { 
+                            delete this->entities[i];
+                            this->entities.erase(this->entities.begin() + i);
+                      }              
+                }
+             }
         }
 		
 		void addEntity(Entity* entity)
@@ -202,16 +240,17 @@ class GameMap
 class Game
 {
     private: 
-        //Window *window;
         GameMap *map;
     
     public: 
         void run()
         {
             this->map = GameMap::loadFromFile("map01.bin");
-			this->map->init();
+			
 			RenderWindow window(VideoMode(320,240), "Window");
 			window.setFramerateLimit(60);
+            gameWindow = &window;
+            this->map->init();
 
 			while(window.isOpen()) {
 				Event event;
@@ -239,6 +278,8 @@ int main()
 {
     Game *game = new Game();
     game->run();
+
+    delete game;
     
     return 0;
 }
