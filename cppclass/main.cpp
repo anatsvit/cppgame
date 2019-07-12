@@ -154,6 +154,59 @@ class GameMap
 {
 	private:
 		vector<Entity*> entities;
+
+        void levelEditor(int vector_size) 
+        {
+            //Create platform block
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+                EntityPlace *entityPlace = new EntityPlace;
+                entityPlace->x_coor = ((int)(sf::Mouse::getPosition(*gameWindow).x / 8)) * 8;
+                entityPlace->y_coor = ((int)(sf::Mouse::getPosition(*gameWindow).y / 8)) * 8;
+                entityPlace->type = ENTITY_TYPE_PLATFORM;
+                bool exists = false;
+                
+                for (int i = 0; i < vector_size; i++) {
+				    if (this->entities[i]->getX() == entityPlace->x_coor && this->entities[i]->getY() == entityPlace->y_coor) {
+                        exists = true;
+                        break;                
+                    }
+			    }
+                
+                if (!exists && entityPlace->x_coor % 8 == 0 && entityPlace->y_coor % 8 == 0) {
+                    Entity *entity = EntityTransformer::transform(entityPlace);
+                    
+                    entity->init();
+                    this->addEntity(entity);
+                }
+                
+                delete entityPlace;
+            }
+            
+            //Remove platform block
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+                int tileX = ((int)(sf::Mouse::getPosition(*gameWindow).x / 8)) * 8;
+                int tileY = ((int)(sf::Mouse::getPosition(*gameWindow).y / 8)) * 8;
+                for (int i = 0; i < vector_size; i++) {
+                      if (this->entities[i]->getX() == tileX && this->entities[i]->getY() == tileY) { 
+                            delete this->entities[i];
+                            this->entities.erase(this->entities.begin() + i);
+                      }              
+                }
+            } 
+
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Middle)) {
+                FILE *mapfile = fopen("map_saved.bin", "wb"); 
+                unsigned short buffer[3];
+                for (int i = 0; i < vector_size; i++) {
+				    buffer[0] = this->entities[i]->getX();
+                    buffer[1] = this->entities[i]->getY();
+                    buffer[2] = ENTITY_TYPE_PLATFORM;
+                    fwrite(buffer, 6, 1, mapfile);
+			    }
+
+                fclose(mapfile);          
+            }    
+        }
     public:
         static GameMap* loadFromFile(const char *filename)
         {
@@ -197,43 +250,10 @@ class GameMap
 				this->entities[i]->update();
 			}
 
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-                EntityPlace *entityPlace = new EntityPlace;
-                entityPlace->x_coor = ((int)(sf::Mouse::getPosition(*gameWindow).x / 8)) * 8;
-                entityPlace->y_coor = ((int)(sf::Mouse::getPosition(*gameWindow).y / 8)) * 8;
-                entityPlace->type = ENTITY_TYPE_PLATFORM;
-                bool exists = false;
-                
-                for (int i = 0; i < vector_size; i++) {
-				    if (this->entities[i]->getX() == entityPlace->x_coor && this->entities[i]->getY() == entityPlace->y_coor) {
-                        exists = true;
-                        break;                
-                    }
-			    }
-                
-                
-                if (!exists && entityPlace->x_coor % 8 == 0 && entityPlace->y_coor % 8 == 0) {
-                    Entity *entity = EntityTransformer::transform(entityPlace);
-                    
-                    entity->init();
-                    this->addEntity(entity);
-                }
-                
-                delete entityPlace;
-            }
-            
-            
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
-                int tileX = ((int)(sf::Mouse::getPosition(*gameWindow).x / 8)) * 8;
-                int tileY = ((int)(sf::Mouse::getPosition(*gameWindow).y / 8)) * 8;
-                for (int i = 0; i < vector_size; i++) {
-                      if (this->entities[i]->getX() == tileX && this->entities[i]->getY() == tileY) { 
-                            delete this->entities[i];
-                            this->entities.erase(this->entities.begin() + i);
-                      }              
-                }
-             }
+            this->levelEditor(vector_size);
         }
+
+        
 		
 		void addEntity(Entity* entity)
 		{
@@ -259,7 +279,7 @@ class Game
             gameWindow = &window;
             
             
-            GameMap *map = GameMap::loadFromFile("map01.bin");
+            GameMap *map = GameMap::loadFromFile("map_saved.bin");
             map->init();
             
 			while(window.isOpen()) {
