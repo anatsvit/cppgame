@@ -15,16 +15,20 @@ class Entity
     protected:
         float x;
         float y;
+        unsigned short tileX;
+        unsigned short tileY;
     
     public:
-        void setX(float newX)
+        virtual void setX(float newX)
         {
             x = newX;
+            tileX = ((int)(newX / 8));
         }
 
-        void setY(float newY)
+        virtual void setY(float newY)
         {
             y = newY;
+            tileY = ((int)(newY / 8));
         }
         
         float getX()
@@ -35,6 +39,16 @@ class Entity
         float getY()
         {
             return y;
+        }
+
+        unsigned short getTileX()
+        {
+            return tileX;
+        }
+
+        unsigned short getTileY()
+        {
+            return tileY;
         }
 		
 		virtual void init() {}
@@ -82,14 +96,35 @@ class PhysicEntity: public Entity
 
 class Player: public PhysicEntity
 {
+    private:
+        RectangleShape shape;
+        
+        void checkKeyboard()
+		{
+			//1.Проверка нажатия клавиши
+			//2.Реакция на клавишу (смена состояния)
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+                this->setX(this->getX() - 0.4);
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+                 this->setX(this->getX() + 0.4);
+            }
+		}
     public:
 		void init()
 		{
-			//1.Загрузить и установить спрайт
+			RectangleShape currentShape;
+            currentShape.setSize(Vector2f(16, 32));
+            currentShape.setPosition(Vector2f(this->getX(), this->getY()));
+            currentShape.setFillColor(Color::Cyan);
+			this->shape = currentShape;
 		}
 		
 		void update()
 		{
+            gameWindow->draw(this->shape);
+
 			//1.Проверить нажатие клавиш
 			this->checkKeyboard();
 			//2.Проверить столкновение с другими физическими объектами на карте (проверять только тайлы вокруг персонажа)
@@ -99,12 +134,17 @@ class Player: public PhysicEntity
 			//6.Перерисовать
 		}
 
-	private:
-		void checkKeyboard()
-		{
-			//1.Проверка нажатия клавиши
-			//2.Реакция на клавишу (смена состояния)
-		}
+        void setX(float newX)
+        {
+            Entity::setX(newX);
+            this->shape.setPosition(Vector2f(this->getX(), this->getY()));
+        }
+		
+        void setY(float newY)
+        {
+            Entity::setY(newY);
+            this->shape.setPosition(Vector2f(this->getX(), this->getY()));
+        }
 };
 
 class Platform: public PhysicEntity
@@ -154,6 +194,7 @@ class GameMap
 {
 	private:
 		vector<Entity*> entities;
+        Entity *tiles[600][600]; 
 
         void levelEditor(int vector_size) 
         {
@@ -186,6 +227,7 @@ class GameMap
             if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
                 int tileX = ((int)(sf::Mouse::getPosition(*gameWindow).x / 8)) * 8;
                 int tileY = ((int)(sf::Mouse::getPosition(*gameWindow).y / 8)) * 8;
+
                 for (int i = 0; i < vector_size; i++) {
                       if (this->entities[i]->getX() == tileX && this->entities[i]->getY() == tileY) { 
                             delete this->entities[i];
@@ -207,6 +249,27 @@ class GameMap
                 fclose(mapfile);          
             }    
         }
+
+        void setTile(Entity *entity)
+        {
+            cout << "XSET: " << entity->getTileX() << endl;
+            cout << "YSET: " << entity->getTileY() << endl;
+            this->tiles[entity->getTileX()][entity->getTileY()] = entity;
+        }
+
+        void clearTile(int tileX, int tileY)
+        {
+            this->tiles[tileX][tileY] = nullptr;  
+        }
+
+        void clearTiles()
+        {
+            for (int i = 0; i < 600; i++) {
+                for (int j = 0; j < 600; j++) {
+                    this->tiles[i][j] = nullptr;             
+                }
+            }   
+        }
     public:
         static GameMap* loadFromFile(const char *filename)
         {
@@ -225,7 +288,6 @@ class GameMap
 			    
 			    gameMap->addEntity(EntityTransformer::transform(entityPlace));
 		    }
-                     
 			
 			delete entityPlace;
 			fclose(mapfile);
@@ -235,11 +297,21 @@ class GameMap
 		
 		void init()
         {
+            this->clearTiles();
+            
+            Player *player = new Player();
+            player->setX(32);
+            player->setY(32);
+            this->addEntity(player);
 			unsigned int vector_size = this->entities.size();
 			
 			for (int i = 0; i < vector_size; i++) {
 				this->entities[i]->init();
 			}
+            
+            for (int i = 0; i < 8; i++) {
+                cout << this->getEntityByTile(i, i) << endl;   
+            }    
         }
         
         void update()
@@ -258,7 +330,13 @@ class GameMap
 		void addEntity(Entity* entity)
 		{
 			this->entities.push_back(entity);
+            this->setTile(entity);
 		}
+
+        Entity* getEntityByTile(unsigned short tileX, unsigned short tileY)
+        {
+            return this->tiles[tileX][tileY];
+        }
 
         ~GameMap()
         {
@@ -270,7 +348,7 @@ class GameMap
 };
 
 class Game
-{    
+{
     public: 
         void run()
         {
@@ -284,8 +362,7 @@ class Game
             
 			while(window.isOpen()) {
 				Event event;
-				while(window.pollEvent(event))
-				{
+				while(window.pollEvent(event)) {
 					if(event.type == Event::Closed)
 						window.close();
 				}
