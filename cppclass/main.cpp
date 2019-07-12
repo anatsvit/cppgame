@@ -40,6 +40,8 @@ class Entity
 		virtual void init() {}
     
 		virtual void update() {}
+        
+        virtual ~Entity() {};
 };
 
 class PhysicEntity: public Entity 
@@ -141,7 +143,6 @@ class EntityTransformer
 				Platform *platform = new Platform();
 				platform->setX(eplace->x_coor);
 				platform->setY(eplace->y_coor);
-				
 				return platform;
 			}
 			
@@ -159,21 +160,21 @@ class GameMap
 			GameMap *gameMap = new GameMap;
             //1.Открыть файл (filename) карты
 			FILE *mapfile = fopen(filename, "rb");
-			
 			EntityPlace *entityPlace = new EntityPlace;
+
 			//2.Загрузить байты
-			while (!feof(mapfile)) {
-				fread(entityPlace, 6, 1, mapfile);
-				
-				if (feof(mapfile)) {
-					break;
-				}
-				
-				gameMap->addEntity(EntityTransformer::transform(entityPlace));
-			}
+            while (!feof(mapfile)) {
+			    fread(entityPlace, 6, 1, mapfile);
+			    
+			    if (feof(mapfile)) {
+				    break;
+			    }
+			    
+			    gameMap->addEntity(EntityTransformer::transform(entityPlace));
+		    }
+                     
 			
 			delete entityPlace;
-			
 			fclose(mapfile);
             
             return gameMap;        
@@ -202,24 +203,27 @@ class GameMap
                 entityPlace->y_coor = ((int)(sf::Mouse::getPosition(*gameWindow).y / 8)) * 8;
                 entityPlace->type = ENTITY_TYPE_PLATFORM;
                 bool exists = false;
-
+                
                 for (int i = 0; i < vector_size; i++) {
 				    if (this->entities[i]->getX() == entityPlace->x_coor && this->entities[i]->getY() == entityPlace->y_coor) {
                         exists = true;
                         break;                
                     }
-			    }                
-
+			    }
+                
+                
                 if (!exists && entityPlace->x_coor % 8 == 0 && entityPlace->y_coor % 8 == 0) {
                     Entity *entity = EntityTransformer::transform(entityPlace);
+                    
                     entity->init();
                     this->addEntity(entity);
                 }
                 
                 delete entityPlace;
             }
-
-             if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+            
+            
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
                 int tileX = ((int)(sf::Mouse::getPosition(*gameWindow).x / 8)) * 8;
                 int tileY = ((int)(sf::Mouse::getPosition(*gameWindow).y / 8)) * 8;
                 for (int i = 0; i < vector_size; i++) {
@@ -235,23 +239,29 @@ class GameMap
 		{
 			this->entities.push_back(entity);
 		}
+
+        ~GameMap()
+        {
+            unsigned int vector_size = this->entities.size();
+            for (int i = 0; i < vector_size; i++) {
+                delete this->entities[i];       
+            }
+        }
 };
 
 class Game
-{
-    private: 
-        GameMap *map;
-    
+{    
     public: 
         void run()
         {
-            this->map = GameMap::loadFromFile("map01.bin");
-			
 			RenderWindow window(VideoMode(320,240), "Window");
 			window.setFramerateLimit(60);
             gameWindow = &window;
-            this->map->init();
-
+            
+            
+            GameMap *map = GameMap::loadFromFile("map01.bin");
+            map->init();
+            
 			while(window.isOpen()) {
 				Event event;
 				while(window.pollEvent(event))
@@ -261,16 +271,16 @@ class Game
 				}
 
 				window.clear();
-				this->update();
+				this->update(map);
 				window.display();
-			}  
+			}
 			
-			delete this->map;
+			delete map;
         }
 
-        void update()
+        void update(GameMap *map)
         {
-            this->map->update();   
+            map->update();   
         }    
 };
 
