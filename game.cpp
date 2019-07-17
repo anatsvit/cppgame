@@ -1,6 +1,9 @@
 #include "game.h"
 #include <SFML/Graphics.hpp>
 
+sf::RenderWindow *Game::gameWindow;
+Game *Game::game;
+
 void Game::run()
 {
 	sf::RenderWindow window(sf::VideoMode(320,240), "Window");

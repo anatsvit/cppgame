@@ -9,6 +9,7 @@ class Game
         GameMap *currentMap;
     public: 
         static sf::RenderWindow *gameWindow;
+        static Game *game;
         void run();
         void update(); 
         GameMap* getCurrentMap();

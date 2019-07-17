@@ -20,9 +20,9 @@ class Entity
 
         float getY();
 
-        unsigned short getTileX();
+        unsigned short getTileX(float shift = 0);
 
-        unsigned short getTileY();
+        unsigned short getTileY(float shift = 0);
 		
 		virtual void init();
     

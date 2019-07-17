@@ -1,7 +1,7 @@
 #include "game_map.h"
 #include <SFML/Graphics.hpp>
-
-sf::RenderWindow *Game::gameWindow;
+#include <stdio.h>
+#include <iostream>
 
 void GameMap::levelEditor(int vector_size) 
 {
@@ -59,8 +59,8 @@ void GameMap::levelEditor(int vector_size)
 
 void GameMap::setTile(Entity *entity)
 {
-    //cout << "XSET: " << entity->getTileX() << endl;
-    //cout << "YSET: " << entity->getTileY() << endl;
+    std::cout << "XSET: " << entity->getTileX() << std::endl;
+    std::cout << "YSET: " << entity->getTileY() << std::endl;
     this->tiles[entity->getTileX()][entity->getTileY()] = entity;
 }
 
@@ -81,6 +81,8 @@ void GameMap::clearTiles()
 GameMap* GameMap::loadFromFile(const char *filename)
 {
 	GameMap *gameMap = new GameMap;
+    gameMap->clearTiles();
+
     //1.Открыть файл (filename) карты
 	FILE *mapfile = fopen(filename, "rb");
 	EntityPlace *entityPlace = new EntityPlace;
@@ -104,10 +106,8 @@ GameMap* GameMap::loadFromFile(const char *filename)
 
 void GameMap::init()
 {
-    this->clearTiles();
-    
     Player *player = new Player();
-    player->setX(32);
+    player->setX(160);
     player->setY(32);
     this->addEntity(player);
 	unsigned int vector_size = this->entities.size();
@@ -129,7 +129,7 @@ void GameMap::update()
 		this->entities[i]->update();
 	}
 
-    this->levelEditor(vector_size);
+    //this->levelEditor(vector_size);
 }
 
 void GameMap::addEntity(Entity* entity)

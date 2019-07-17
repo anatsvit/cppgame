@@ -22,14 +22,22 @@ float Entity::getY()
     return y;
 }
 
-unsigned short Entity::getTileX()
+unsigned short Entity::getTileX(float shift)
 {
-    return tileX;
+    if (shift == 0) {
+        return tileX;
+    }
+    
+    return ((int)((this->getX() + shift) / 8));
 }
 
-unsigned short Entity::getTileY()
+unsigned short Entity::getTileY(float shift)
 {
-    return tileY;
+    if (shift == 0) {
+        return tileY;
+    }
+    
+    return ((int)((this->getY() + shift) / 8));
 }
 
 void Entity::init() {}

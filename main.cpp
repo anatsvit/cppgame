@@ -4,10 +4,10 @@
 
 int main()
 {
-    Game *game = new Game();
-    game->run();
+    Game::game = new Game();
+    Game::game->run();
 
-    delete game;
+    delete Game::game;
     
     return 0;
 }
