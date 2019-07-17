@@ -1,6 +1,8 @@
 #include "game_map.h"
 #include <SFML/Graphics.hpp>
 
+sf::RenderWindow *Game::gameWindow;
+
 void GameMap::levelEditor(int vector_size) 
 {
     //Create platform block

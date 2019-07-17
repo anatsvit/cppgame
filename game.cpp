@@ -1,19 +1,36 @@
-class Game
-{
-    private Window window;
-    private Map map;
-    
-    public function run()
-    {
-        Map map = Map::loadFromFile('map01.bin');
- 
-        while (window.isOpen()) {
-            this.update();
-        }      
-    }
+#include "game.h"
+#include <SFML/Graphics.hpp>
 
-    public function update()
-    {
-        map.update();   
-    }    
+void Game::run()
+{
+	sf::RenderWindow window(sf::VideoMode(320,240), "Window");
+	window.setFramerateLimit(60);
+    Game::gameWindow = &window;
+    
+    this->currentMap = GameMap::loadFromFile("map_saved.bin");
+    this->currentMap->init();
+    
+	while(window.isOpen()) {
+		sf::Event event;
+		while(window.pollEvent(event)) {
+			if(event.type == sf::Event::Closed)
+				window.close();
+		}
+
+		window.clear();
+		this->update();
+		window.display();
+	}
+	
+	delete this->currentMap;
 }
+
+void Game::update()
+{
+    this->currentMap->update();
+}
+
+GameMap* Game::getCurrentMap()
+{
+    return this->currentMap;
+}  

@@ -1,4 +1,14 @@
 /#!/bin/bash
+g++ -c game.cpp
+g++ -c game_map.cpp
 g++ -c main.cpp
-g++ main.o -o sfml-app -lsfml-graphics -lsfml-window -lsfml-system
-rm main.o
+g++ -c entity.cpp
+g++ -c entity_transformer.cpp
+g++ -c physic_entity.cpp
+g++ -c platform.cpp
+g++ -c player.cpp
+
+g++ game.o game_map.o entity.o entity_transformer.o physic_entity.o platform.o player.o main.o -o sfml-app -lsfml-graphics -lsfml-window -lsfml-system
+
+rm *.o
+
