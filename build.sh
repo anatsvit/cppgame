@@ -1,4 +1,5 @@
 /#!/bin/bash
+rm sfml-app
 g++ -c game.cpp
 g++ -c game_map.cpp
 g++ -c main.cpp

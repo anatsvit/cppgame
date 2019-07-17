@@ -2,7 +2,7 @@
 #define GAME_H
 #include "game_map.h"
 #include <SFML/Graphics.hpp>
-
+class GameMap;
 class Game
 {
     private:

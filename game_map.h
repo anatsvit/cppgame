@@ -1,12 +1,13 @@
+#ifndef GAME_MAP_H
+#define GAME_MAP_H
+
 #include <vector>
 #include "entity.h"
 #include "game_structs.h"
 #include "entity_transformer.h"
-#include "game.h"
 #include "player.h"
+#include "game.h"
 
-#ifndef GAME_MAP_H
-#define GAME_MAP_H
 class GameMap
 {
 	private:
