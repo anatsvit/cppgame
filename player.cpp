@@ -85,7 +85,9 @@ void Player::doState()
     this->addState(PLAYER_STATE_FALL);
 
     for (int i = 0; i < 3; i++) {
-         if (Game::game->getCurrentMap()->getEntityByTile(this->getTileX() + i, this->getTileY() + 4)) {             
+         Entity *bottomEntity = Game::game->getCurrentMap()->getEntityByTile(this->getTileX() + i, this->getTileY() + 4);
+         if (bottomEntity && this->isCollision(bottomEntity)) {  
+            this->setY(bottomEntity->getY() - PLAYER_HEIGHT);          
             this->removeState(PLAYER_STATE_FALL);
             this->addState(PLAYER_STATE_IDLE);
             break;
@@ -112,12 +114,12 @@ void Player::setX(float newX)
 {
     Entity::setX(newX);
     this->shape.setPosition(sf::Vector2f(this->getX(), this->getY()));
-    std::cout << "X:" << newX << std::endl;
+    //std::cout << "X:" << newX << std::endl;
 }
 
 void Player::setY(float newY)
 {
     Entity::setY(newY);
-    std::cout << "Y:" << newY << std::endl;
+    //std::cout << "Y:" << newY << std::endl;
     this->shape.setPosition(sf::Vector2f(this->getX(), this->getY()));
 }

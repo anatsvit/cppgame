@@ -20,8 +20,12 @@ int PhysicEntity::getHeight()
     return height;
 }
 
-bool PhysicEntity::isCollision(PhysicEntity *other)
+bool PhysicEntity::isCollision(Entity *other)
 {
+    if (!other) {
+        return false;    
+    }
+    
     return (this->getX() < (other->getX() + other->getWidth())) && 
            ((this->getX() + this->getWidth()) > other->getX()) && 
            (this->getY() < (other->getY() + other->getHeight())) && 

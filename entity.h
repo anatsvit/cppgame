@@ -23,10 +23,15 @@ class Entity
         unsigned short getTileX(float shift = 0);
 
         unsigned short getTileY(float shift = 0);
+
+        virtual int getWidth();
+        virtual int getHeight();
 		
 		virtual void init();
     
 		virtual void update();
+
+        virtual bool isCollision(Entity *e);
         
         virtual ~Entity();
 };

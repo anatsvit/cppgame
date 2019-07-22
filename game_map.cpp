@@ -109,6 +109,8 @@ void GameMap::init()
     Player *player = new Player();
     player->setX(160);
     player->setY(32);
+    player->setWidth(PLAYER_WIDTH);
+    player->setHeight(PLAYER_HEIGHT);
     this->addEntity(player);
 	unsigned int vector_size = this->entities.size();
 	

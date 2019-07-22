@@ -17,7 +17,7 @@ class PhysicEntity: public Entity
 
         int getHeight();
 
-        bool isCollision(PhysicEntity *other);
+        bool isCollision(Entity *other);
 };
 
 #endif

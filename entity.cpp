@@ -44,4 +44,19 @@ void Entity::init() {}
 
 void Entity::update() {}
 
+bool Entity::isCollision(Entity *e) 
+{
+    return false;
+}
+
+int Entity::getWidth()
+{
+    return 0;
+}
+
+int Entity::getHeight()
+{
+    return 0;
+}
+
 Entity::~Entity() {};
